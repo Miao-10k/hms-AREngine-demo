@@ -29,15 +29,12 @@ import com.huawei.arengine.demos.common.service.TextService
 import com.huawei.arengine.demos.common.util.FramePerSecond
 import com.huawei.arengine.demos.common.util.findViewById
 import com.huawei.arengine.demos.common.util.showScreenTextView
+import com.huawei.arengine.demos.world.model.VirtualObject
 import com.huawei.arengine.demos.world.service.LabelService
 import com.huawei.arengine.demos.world.service.ObjectService
 import com.huawei.arengine.demos.world.service.updateScreenText
 import com.huawei.arengine.demos.world.util.Constants
-import com.huawei.hiar.ARFrame
-import com.huawei.hiar.ARLightEstimate
-import com.huawei.hiar.ARPlane
-import com.huawei.hiar.ARSession
-import com.huawei.hiar.ARTrackable
+import com.huawei.hiar.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -66,6 +63,10 @@ class WorldRenderController(private val activity: Activity,
     private val labelService by lazy { LabelService() }
 
     private val objectService by lazy { ObjectService() }
+
+    private val augmentedImages = mutableListOf<ARAugmentedImage>()
+
+    private val virtualObjects: ArrayList<VirtualObject> = ArrayList()
 
     override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
         // Set the window color.
@@ -114,6 +115,15 @@ class WorldRenderController(private val activity: Activity,
     }
 
     private fun renderLabelAndObjects(frame: ARFrame) {
+        val images = arSession?.getAllTrackables(ARAugmentedImage::class.java) ?: return
+        for (image in images) {
+            if (image in augmentedImages) {
+
+            } else {
+                virtualObjects.add(VirtualObject(image.createAnchor(image.centerPose), Constants.BLUE_COLORS))
+                augmentedImages.add(image)
+            }
+        }
         val planes = arSession?.getAllTrackables(ARPlane::class.java) ?: return
         for (plane in planes) {
             if (plane.type != ARPlane.PlaneType.UNKNOWN_FACING
@@ -132,7 +142,7 @@ class WorldRenderController(private val activity: Activity,
             }
             getProjectionMatrix(projectionMatrix, 0, Constants.PROJ_MATRIX_NEAR, Constants.PROJ_MATRIX_FAR)
             getViewMatrix(viewMatrix, 0)
-            labelService.renderLabels(planes, displayOrientedPose, projectionMatrix)
+//            labelService.renderLabels(planes, displayOrientedPose, projectionMatrix)
         }.also {
             gestureController.handleGestureEvent(frame, it, projectionMatrix, viewMatrix)
         }
@@ -148,7 +158,7 @@ class WorldRenderController(private val activity: Activity,
     }
 
     private fun drawAllObjects(projectionMatrix: FloatArray, viewMatrix: FloatArray, lightPixelIntensity: Float) {
-        val ite = gestureController.virtualObjects.iterator()
+        val ite = virtualObjects.iterator()
         while (ite.hasNext()) {
             val obj = ite.next()
             obj.getArAnchor().run {

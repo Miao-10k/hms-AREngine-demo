@@ -16,6 +16,9 @@
 package com.huawei.arengine.demos.world
 
 import android.app.Activity
+import android.content.res.AssetManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
@@ -28,6 +31,7 @@ import com.huawei.arengine.demos.common.util.startActivityByType
 import com.huawei.arengine.demos.common.view.ConnectAppMarketActivity
 import com.huawei.arengine.demos.world.controller.GestureController
 import com.huawei.arengine.demos.world.controller.WorldRenderController
+import com.huawei.hiar.ARAugmentedImageDatabase
 import com.huawei.hiar.ARConfigBase
 import com.huawei.hiar.ARSession
 import com.huawei.hiar.ARWorldTrackingConfig
@@ -37,6 +41,7 @@ import com.huawei.hiar.exceptions.ARUnavailableClientSdkTooOldException
 import com.huawei.hiar.exceptions.ARUnavailableServiceApkTooOldException
 import com.huawei.hiar.exceptions.ARUnavailableServiceNotInstalledException
 import kotlinx.android.synthetic.main.world_java_activity_main.surfaceView
+import java.io.IOException
 
 /**
  * This AR example shows how to use the world AR scene of HUAWEI AR Engine,
@@ -98,6 +103,11 @@ class WorldActivity : Activity() {
             ARWorldTrackingConfig(arSession).apply {
                 focusMode = ARConfigBase.FocusMode.AUTO_FOCUS
                 semanticMode = ARWorldTrackingConfig.SEMANTIC_PLANE
+                val db = ARAugmentedImageDatabase(arSession)
+                val assetManager = assets
+                val augmentedImageBitmap = loadAugmentedImageBitmap(assetManager, "earth.jpg")
+                db.addImage("earth", augmentedImageBitmap)
+                augmentedImageDatabase = db
             }.also {
                 arSession?.configure(it)
             }
@@ -119,6 +129,15 @@ class WorldActivity : Activity() {
             return
         }
         resumeView()
+    }
+
+    private fun loadAugmentedImageBitmap(assetManager: AssetManager, imageName: String): Bitmap? {
+        try {
+            assetManager.open(imageName).use { inputStream -> return BitmapFactory.decodeStream(inputStream) }
+        } catch (e: IOException) {
+
+        }
+        return null
     }
 
     private fun resumeView() {
