@@ -29,7 +29,9 @@ import com.huawei.arengine.demos.common.service.TextService
 import com.huawei.arengine.demos.common.util.FramePerSecond
 import com.huawei.arengine.demos.common.util.findViewById
 import com.huawei.arengine.demos.common.util.showScreenTextView
+import com.huawei.arengine.demos.world.WorldActivity
 import com.huawei.arengine.demos.world.model.VirtualObject
+import com.huawei.arengine.demos.world.model.AugmentedImageVirtualObject
 import com.huawei.arengine.demos.world.service.LabelService
 import com.huawei.arengine.demos.world.service.ObjectService
 import com.huawei.arengine.demos.world.service.updateScreenText
@@ -67,6 +69,7 @@ class WorldRenderController(private val activity: Activity,
     private val augmentedImages = mutableListOf<ARAugmentedImage>()
 
     private val virtualObjects: ArrayList<VirtualObject> = ArrayList()
+    private val augmentedImageVirtualObjects: ArrayList<AugmentedImageVirtualObject> = ArrayList()
 
     override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
         // Set the window color.
@@ -116,11 +119,16 @@ class WorldRenderController(private val activity: Activity,
 
     private fun renderLabelAndObjects(frame: ARFrame) {
         val images = arSession?.getAllTrackables(ARAugmentedImage::class.java) ?: return
+        val pose = augmentedImages.getOrNull(0)?.centerPose?.toString()
+        pose?.let {
+            (activity as? WorldActivity)?.showText(it)
+        }
         for (image in images) {
             if (image in augmentedImages) {
 
             } else {
-                virtualObjects.add(VirtualObject(image.createAnchor(image.centerPose), Constants.BLUE_COLORS))
+//                virtualObjects.add(VirtualObject(image.createAnchor(image.centerPose), Constants.BLUE_COLORS))
+                augmentedImageVirtualObjects.add(AugmentedImageVirtualObject(image, Constants.BLUE_COLORS))
                 augmentedImages.add(image)
             }
         }
@@ -158,10 +166,10 @@ class WorldRenderController(private val activity: Activity,
     }
 
     private fun drawAllObjects(projectionMatrix: FloatArray, viewMatrix: FloatArray, lightPixelIntensity: Float) {
-        val ite = virtualObjects.iterator()
+        val ite = augmentedImageVirtualObjects.iterator()
         while (ite.hasNext()) {
             val obj = ite.next()
-            obj.getArAnchor().run {
+            obj.getAugmentedImage().run {
                 if (trackingState == ARTrackable.TrackingState.STOPPED) {
                     ite.remove()
                 }

@@ -25,7 +25,7 @@ import com.huawei.arengine.demos.MainApplication
 import com.huawei.arengine.demos.common.util.MatrixUtil.normalizeVec3
 import com.huawei.arengine.demos.common.util.checkGlError
 import com.huawei.arengine.demos.common.util.createGlProgram
-import com.huawei.arengine.demos.world.model.VirtualObject
+import com.huawei.arengine.demos.world.model.AugmentedImageVirtualObject
 import com.huawei.arengine.demos.world.pojo.ObjectShaderPojo
 import com.huawei.arengine.demos.world.util.Constants
 import com.huawei.arengine.demos.world.util.ObjectUtil
@@ -154,7 +154,7 @@ class ObjectService {
      * @param obj The virtual object.
      */
     fun renderObjects(cameraView: FloatArray?, cameraProjection: FloatArray?,
-        lightIntensity: Float, obj: VirtualObject) {
+        lightIntensity: Float, obj: AugmentedImageVirtualObject) {
         checkGlError(TAG, "onDrawFrame start.")
         val modelViewMatrix = FloatArray(Constants.MATRIX_SIZE)
         val modelViewProjectionMatrix = FloatArray(Constants.MATRIX_SIZE)

@@ -23,6 +23,7 @@ import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import com.huawei.arengine.demos.R
 import com.huawei.arengine.demos.common.controller.DisplayRotationController
@@ -31,10 +32,7 @@ import com.huawei.arengine.demos.common.util.startActivityByType
 import com.huawei.arengine.demos.common.view.ConnectAppMarketActivity
 import com.huawei.arengine.demos.world.controller.GestureController
 import com.huawei.arengine.demos.world.controller.WorldRenderController
-import com.huawei.hiar.ARAugmentedImageDatabase
-import com.huawei.hiar.ARConfigBase
-import com.huawei.hiar.ARSession
-import com.huawei.hiar.ARWorldTrackingConfig
+import com.huawei.hiar.*
 import com.huawei.hiar.exceptions.ARCameraNotAvailableException
 import com.huawei.hiar.exceptions.ARUnSupportedConfigurationException
 import com.huawei.hiar.exceptions.ARUnavailableClientSdkTooOldException
@@ -56,6 +54,8 @@ class WorldActivity : Activity() {
         private const val TAG = "WorldActivity"
     }
 
+    private var testTv: TextView? = null
+
     private var arSession: ARSession? = null
 
     private val gestureController by lazy { GestureController() }
@@ -73,6 +73,7 @@ class WorldActivity : Activity() {
     }
 
     private fun initUi() {
+        testTv = findViewById(R.id.test_tv)
         surfaceView.apply {
             setOnTouchListener { v, event ->
                 v.performClick()
@@ -100,13 +101,13 @@ class WorldActivity : Activity() {
                 return
             }
             arSession = ARSession(this)
-            ARWorldTrackingConfig(arSession).apply {
+            ARImageTrackingConfig(arSession).apply {
                 focusMode = ARConfigBase.FocusMode.AUTO_FOCUS
                 semanticMode = ARWorldTrackingConfig.SEMANTIC_PLANE
                 val db = ARAugmentedImageDatabase(arSession)
                 val assetManager = assets
                 val augmentedImageBitmap = loadAugmentedImageBitmap(assetManager, "earth.jpg")
-                db.addImage("earth", augmentedImageBitmap)
+                db.addImage("earth", augmentedImageBitmap, 0.17f)
                 augmentedImageDatabase = db
             }.also {
                 arSession?.configure(it)
@@ -188,5 +189,9 @@ class WorldActivity : Activity() {
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+    }
+
+    fun showText(text: String) {
+        testTv?.text = text
     }
 }
